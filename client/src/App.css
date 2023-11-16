@@ -2,6 +2,17 @@
   text-align: center;
 }
 
+.chatbot {
+  width: 700px;
+  height: 600px;
+  background-color: #282c34;
+	margin: 10px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -72,6 +83,9 @@ li {
 }
 
 .App-header {
+  width: 700px;
+  height: 100px;
+	margin: 10px auto;
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
