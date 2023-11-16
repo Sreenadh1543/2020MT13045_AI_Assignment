@@ -1,18 +1,19 @@
 import React, { Component } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import Tabs from "./Tabs";
+import Welcome from "./Welcome";
+import SimpleChatBot from "./SimpleChatBot";
+import SingleEmbedding from "./SingleEmbedding";
+import MultiEmbedding from "./MultiEmbedding";
+import ChatGpt from "./ChatGpt";
+import NavBar from "./NavigationBar";
+import {Routes,Route,Link} from 'react-router-dom';
 
 class App extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { apiResponse: "" };
-        this.tabData = [
-            { label: "Tab 1" },
-            { label: "Tab 2" },
-            { label: "Tab 3" },
-        ];
+        this.state = { apiResponse: "" };      
     }
 
     callAPI() {
@@ -31,11 +32,18 @@ class App extends Component {
     render() {
         return (
             <div className="App">
-                <Tabs tabs={this.tabData} />
+                <NavBar></NavBar>
+                <Routes>
+                    <Route exact path="/" Component={Welcome}/>
+                    <Route exact path="/simplechatbot" Component={SimpleChatBot}/>
+                    <Route exact path="/chatgpt" Component={ChatGpt}/>
+                    <Route exact path="/single-embedding" Component={SingleEmbedding}/>
+                    <Route exact path="/multi-embedding" Component={MultiEmbedding}/>
+                </Routes>
                 <p className="App-intro">{this.state.apiResponse}</p>
             </div>
         );
     }
 }
 
-export default App;
+export default App;    ;

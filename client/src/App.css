@@ -2,6 +2,35 @@
   text-align: center;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  display: block;
+  height: 50px;
+  line-height: 50px;
+  padding: 20px;
+}
+
+.mainmaneheader {
+  float: left;
+  position: relative;
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  text-align: right;
+}
+
+li {
+  list-style: none;
+  display: inline;
+}
+
 .tabs-container {
 	width: 1500px;
   height:600px;
