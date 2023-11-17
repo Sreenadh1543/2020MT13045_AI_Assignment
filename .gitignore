@@ -1,1 +1,5 @@
-/.idea/
+# Default ignored files
+/shelf/
+/.idea/*
+/2020MT13045_AI_ASSIGNMENT.iml
+/misc.xml
