@@ -4,10 +4,7 @@ import React from 'react';
 
 const MessageParser = ({ children, actions }) => {
   const parse = (message) => {
-    if (message.includes('hello')) {
-      console.log('hi');
-      actions.handleHello();
-    }
+      actions.handlePrompt(message);
   };
 
   return (

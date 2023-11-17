@@ -1,15 +1,16 @@
 import React , {Component} from "react";
 import Chatbot from 'react-chatbot-kit';
-import 'react-chatbot-kit/build/main.css';
-import config from './Config.js';
+import config from '../Config.js';
 import ActionProvider from './ActionProvider.js';
 import MessageParser from './MessageParser.js';
 
+import 'react-chatbot-kit/build/main.css';
 
-function SimpleChatBot(){
+function ChatGpt(){
     return (
        <div>
-         <h1>Simple Chat bot with Random Responses!</h1>
+         <h1>Simple Chat bot Integrated with OPEN Ai Api's </h1>
+         <h1>Text-Davinci-003</h1>
          <div className="chatbot">
              <Chatbot
               config={config}
@@ -21,4 +22,4 @@ function SimpleChatBot(){
 
 }
 
-export default SimpleChatBot;
+export default ChatGpt;

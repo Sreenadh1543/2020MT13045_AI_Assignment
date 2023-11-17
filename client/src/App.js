@@ -2,10 +2,10 @@ import React, { Component } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import Welcome from "./Welcome";
-import SimpleChatBot from "./SimpleChatBot";
+import SimpleChatBot from "./simpleChatBot/SimpleChatBot";
 import SingleEmbedding from "./SingleEmbedding";
 import MultiEmbedding from "./MultiEmbedding";
-import ChatGpt from "./ChatGpt";
+import ChatGpt from "./openAi-textdavinci/ChatGpt";
 import NavBar from "./NavigationBar";
 import {Routes,Route,Link} from 'react-router-dom';
 
@@ -13,13 +13,13 @@ class App extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { apiResponse: "" };      
+        this.state = { apiResponse: "Backend Server is not started" };      
     }
 
     callAPI() {
-        fetch("http://localhost:9000/testAPI")
-            .then(res => res.text())
-            .then(res => this.setState({ apiResponse: res }))
+        fetch("http://localhost:9000/testApi")
+            .then(res => res.json())
+            .then(res => this.setState({ apiResponse: res.message }))
             .catch(err => err);
     }
 
@@ -32,7 +32,9 @@ class App extends Component {
     render() {
         return (
             <div className="App">
+                
                 <NavBar></NavBar>
+                <h3 className="App-intro">{this.state.apiResponse}</h3>
                 <Routes>
                     <Route exact path="/" Component={Welcome}/>
                     <Route exact path="/simplechatbot" Component={SimpleChatBot}/>
@@ -40,7 +42,9 @@ class App extends Component {
                     <Route exact path="/single-embedding" Component={SingleEmbedding}/>
                     <Route exact path="/multi-embedding" Component={MultiEmbedding}/>
                 </Routes>
-                <p className="App-intro">{this.state.apiResponse}</p>
+                <br/>
+                <br/>
+              
             </div>
         );
     }
