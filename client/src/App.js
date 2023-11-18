@@ -3,7 +3,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import Welcome from "./Welcome";
 import SimpleChatBot from "./simpleChatBot/SimpleChatBot";
-import SingleEmbedding from "./SingleEmbedding";
+import SingleEmbedding from "./singlepdf/SingleEmbedding";
 import MultiEmbedding from "./MultiEmbedding";
 import ChatGpt from "./openAi-textdavinci/ChatGpt";
 import NavBar from "./NavigationBar";

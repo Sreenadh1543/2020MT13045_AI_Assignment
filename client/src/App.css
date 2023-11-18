@@ -82,6 +82,15 @@ li {
   }
 }
 
+.bot-to-left{
+  width: 400px;
+  height: 500px;
+	padding-left: 100px;
+  background-color: #282c34;
+  float: left;
+  position: relative;
+}
+
 .App-header {
   width: 700px;
   height: 100px;
