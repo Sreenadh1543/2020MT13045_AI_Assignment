@@ -73,6 +73,7 @@ app.post('/pdfupload', upload.single('file'), function (req, res) {
                       console.log("Chunks Length is "+chunks.length);
                       //Use Chunks to get vector responses
                       var result=getVerctorResponsesAndStoreAsCsv(chunks,fileName);
+                      //console.log(result);
                       if(result){
                         return res.status(200).json({
                           success: true,
@@ -125,13 +126,13 @@ function createchunks(inputText,chunksize){
       console.log("============Service Called=============");
       console.log("Chunk Text "+chunk);
         try{
-          //var vectorResponse = await callEmbeddingService(chunk,index);
-          var vectorResponse = {
+          var vectorResponse = await callEmbeddingService(chunk,index);
+          /*var vectorResponse = {
             index:0,
             embeddings:"Some Embeddings",
             tokens:80,
             inputText:"Some Text"
-          };
+          };*/
           vectorResponses.push(vectorResponse);
       }catch(err){
         console.log(err);
@@ -139,24 +140,29 @@ function createchunks(inputText,chunksize){
       console.log("============Service Called=============");
     }
     console.log("============Vector Tokens=============");
-    console.log(vectorResponses);
-    console.log("============Vector Tokens=============");
-    console.log("============Storing Vector Tokens as Excel =============");
-    fileName=fileName.replace(".pdf","");
-    console.log("file name is >>",fileName);
-    const writer = csvWriter.createObjectCsvWriter({
-      path: path.resolve('./excel_Vector_Store', fileName+'.csv'),
-      header: [
-        { id: 'index', title: 'Index' },
-        { id: 'embeddings', title: 'Embeddings' },
-        { id: 'tokens', title: 'Tokens' },
-        { id: 'inputText', title: 'InputText' },
-      ],
-    });
-    writer.writeRecords(vectorResponses).then(() => {
-      console.log('Excel Created');
-    });
-    return true;
+
+    /*
+    Promise.all(vectorResponses).then(function (values) {
+      console.log(values);
+      console.log("============Vector Tokens=============");
+      console.log("============Storing Vector Tokens as Excel =============");
+      fileName=fileName.replace(".pdf","");
+      console.log("file name is >>",fileName);
+      const writer = csvWriter.createObjectCsvWriter({
+        path: path.resolve('./excel_Vector_Store', fileName+'.csv'),
+        header: [
+          { id: 'index', title: 'Index' },
+          { id: 'embeddings', title: 'Embeddings' },
+          { id: 'tokens', title: 'Tokens' },
+          { id: 'inputText', title: 'InputText' },
+        ],
+      });
+      writer.writeRecords(vectorResponses).then(() => {
+        console.log('Excel Created');
+      });
+    });*/
+
+    return vectorResponses;
   }
 
   async function callEmbeddingService(chunk,index){
@@ -173,11 +179,12 @@ function createchunks(inputText,chunksize){
               tokens:res.data["usage"].total_tokens,
               inputText:chunk
             };
+            console.log(result);
             return result;
         });
         setTimeout(() => {
             resolve(result);
-        },500);
+        },1000);
     });
   }
 
