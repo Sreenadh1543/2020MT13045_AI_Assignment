@@ -69,15 +69,8 @@ app.post('/pdfupload', upload.single('file'), function (req, res) {
                       // Chunk Size is divided by 3 As only 3 calls are allowed per minute
                       const chunks = createchunks(concatenatedFileText,chunkSize);
                       console.log("Chunks Length is "+chunks.length);
-                        for(let index=0;index<chunks.length;index++){
-                          const chunk = chunks[index];
-                          console.log("============Service Called=============");
-                          console.log("Chunk Text "+chunk);
-                          embedText(chunk,index).then(async(result) => {
-                              
-                          });
-                        console.log("============Service Called=============");
-                      }
+                      var vectorResponses = getVerctorResponses(chunks);
+                      console.log(vectorResponses);                     
                   }
                 }else{
                   return res.status(200).json({
@@ -116,29 +109,44 @@ function createchunks(inputText,chunksize){
   return chunks; 
 }
 
-
-function embedText(inputText,index){
-    try{
-      var result = "";
-      return new Promise((resolve) => {
-          openai.createEmbedding({
-                model:"text-embedding-ada-002",
-                input: inputText,
-          })
-          .then((res) => {
-              var embeddings = res.data["data"][0]["embedding"];
-              return embeddings;
-          });
-          setTimeout(() => {
-              resolve(result);
-          },1000);
-      });
-  }catch(err){
-    console.log(err);
-    return undefined;
+   async function getVerctorResponses(chunks){
+    var vectorResponses = [];
+    for(let index=0;index<chunks.length;index++){
+      const chunk = chunks[index];
+      console.log("============Service Called=============");
+      console.log("Chunk Text "+chunk);
+        try{
+          var vectorResponse = await callEmbeddingService(chunk,index);
+          vectorResponses.push(vectorResponse);
+      }catch(err){
+        console.log(err);
+      }
+      console.log("============Service Called=============");
+    }
+    return vectorResponses;
   }
-}
 
+  async function callEmbeddingService(chunk,index){
+    var result = {};
+    return new Promise((resolve) => {
+        openai.createEmbedding({
+              model:"text-embedding-ada-002",
+              input: chunk,
+        })
+        .then((res) => {
+          result = {
+              index:index,
+              embeddings:res.data["data"][0]["embedding"],
+              tokens:res.data["usage"].total_tokens,
+              inputText:chunk
+            };
+            return result;
+        });
+        setTimeout(() => {
+            resolve(result);
+        },1000);
+    });
+  }
 
 app.get("/testApi", async (req, res) => {
   return res.status(200).json({
