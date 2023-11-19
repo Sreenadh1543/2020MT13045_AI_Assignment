@@ -2,9 +2,12 @@ import cookieParser from "cookie-parser";
 import logger from "morgan";
 import cors from "cors";
 import { Configuration, OpenAIApi } from "openai";
-import { PdfReader } from "pdfreader";
+import multer from "multer";
 import http from "http";
 import express from 'express';
+import fs from 'fs';
+import pdf from 'pdf-parse';
+
 
 var app = express();
 app.use(cors());
@@ -19,13 +22,130 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'pdf/')
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname)
+  },
+})
+
+const upload = multer({ storage: storage })
+
+app.post('/pdfupload', upload.single('file'), function (req, res) {
+   console.log("-----------------------------------------------");
+   var file = req.file;
+   console.log(file);
+   console.log("-----------------------------------------------");
+    if(file!=undefined){
+        var fileName = file.filename;
+        console.log("file Name is "+fileName);
+        if(fs.existsSync("./pdf/"+fileName)){
+          console.log("======file Exists======");
+          let dataBuffer = fs.readFileSync("./pdf/"+fileName);
+          pdf(dataBuffer).then(function(data) {
+             if(data!=undefined){
+                var pages = data.numpages;
+                if(pages!=1){
+                  return res.status(200).json({
+                    success: true,
+                    message: "Only One Page is allowed for this implementation",
+                  });
+                }
+                var pdf = data.text;
+                if(pdf!=undefined && pdf.length>30){
+                  //MergeLInes to single paragraph
+                  const lines = pdf.split("\n");
+                  const concatenatedFileText = lines.join("").trim().replace(/\s+/g," ");
+                  console.log("======Concatenated File Text======");
+                  console.log(concatenatedFileText);
+                  console.log("======Concatenated File Text======");
+                  if(undefined!=concatenatedFileText && concatenatedFileText.length>0){
+                      const textLength = concatenatedFileText.length;  
+                      // Create chunks of data
+                      const chunkSize = textLength/3; 
+                      console.log("Chunk Size "+chunkSize);
+                      // Chunk Size is divided by 3 As only 3 calls are allowed per minute
+                      const chunks = createchunks(concatenatedFileText,chunkSize);
+                      console.log("Chunks Length is "+chunks.length);
+                        for(let index=0;index<chunks.length;index++){
+                          const chunk = chunks[index];
+                          console.log("============Service Called=============");
+                          console.log("Chunk Text "+chunk);
+                          embedText(chunk,index).then(async(result) => {
+                              
+                          });
+                        console.log("============Service Called=============");
+                      }
+                  }
+                }else{
+                  return res.status(200).json({
+                    success: true,
+                    message: "PDF text is less than 30 Characters or no text is available",
+                  });
+                }
+             }else{
+              return res.status(200).json({
+                success: true,
+                message: "Unable to retrieve data from PDF",
+              });
+             }
+          })
+          .catch(function(error){
+            return res.status(200).json({
+              success: true,
+              message: "Unable to retrieve data from PDF",
+            });
+          })
+    }
+    return res.status(200).json({
+      success: true,
+      message: "File Uploaded Succesfully",
+    });
+   }
+})
+
+function createchunks(inputText,chunksize){
+  const chunks = [];
+  let i =0;
+  while(i<inputText.length){
+      chunks.push(inputText.slice(i,i+chunksize));
+      i+=chunksize;
+  }
+  return chunks; 
+}
+
+
+function embedText(inputText,index){
+    try{
+      var result = "";
+      return new Promise((resolve) => {
+          openai.createEmbedding({
+                model:"text-embedding-ada-002",
+                input: inputText,
+          })
+          .then((res) => {
+              var embeddings = res.data["data"][0]["embedding"];
+              return embeddings;
+          });
+          setTimeout(() => {
+              resolve(result);
+          },1000);
+      });
+  }catch(err){
+    console.log(err);
+    return undefined;
+  }
+}
+
+
 app.get("/testApi", async (req, res) => {
   return res.status(200).json({
     success: true,
     message: "Backend is up and running on 9000 port",
   });
 });
-
 
 app.post("/ask", async (req, res) => {
     const prompt = req.body.prompt;

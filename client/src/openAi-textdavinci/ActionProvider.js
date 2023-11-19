@@ -20,7 +20,6 @@ const ActionProvider = ({ createChatBotMessage, setState, children }) => {
     .then((response) => response.json())
     .then((responseData)=> {
       setTimeout(() => {
-        console.log("data in messages "+ responseData.message)
         const botMessage = createChatBotMessage(responseData.message);
         setState((prev) => ({
           ...prev,

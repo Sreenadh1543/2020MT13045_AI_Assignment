@@ -5,11 +5,15 @@ import ActionProvider from './ActionProvider.js';
 import MessageParser from './MessageParser.js';
 import { useRef } from "react";
 import { useState } from "react";
+import FileReader from "react-file-reader";
+
 
 
 export const SingleEmbedding = ({}) => {
   const [fileName, setFileName] = useState("");
-  
+  const [pdf, setPdf] = useState({ preview: '', data: '' })
+  const [status, setStatus] = useState('')
+
   const handleFile = (file) => {
     setFileName(file.name);
   };
@@ -19,16 +23,27 @@ export const SingleEmbedding = ({}) => {
 
   // Programatically click the hidden file input element
   // when the Button component is clicked
-  const handleClick = (event) => {
-    hiddenFileInput.current.click();
-  };
-  // Call a function (passed as a prop from the parent component)
-  // to handle the user-selected file
-  const handleChange = (event) => {
-    const fileUploaded = event.target.files[0];
-    console.log(fileName);
-    handleFile(fileUploaded);
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    let formData = new FormData()
+    formData.append('file', pdf.data)
+    formData.append('name', pdf.name)
+    const response = await fetch('http://localhost:9000/pdfupload', {
+      method: 'POST',
+      body: formData,
+    })
+    if (response) setStatus(response.statusText)
+  }
+  const handleChange = (e) => {
+    var file = e.target.files[0];
+    console.log(file);
+    handleFile(file)
+    const pdf = {
+      data: file,
+      name: file.name
+    }
+    setPdf(pdf)
+  }
   return (
     <>
     <div>
@@ -55,16 +70,23 @@ export const SingleEmbedding = ({}) => {
         <h3>Upload Single Pdf for embedding</h3> <br />
       </div>
       </div>
-      <button className="button-upload" onClick={handleClick}>
-        Upload a file
-      </button>
-      <input
-        type="file"
-        onChange={handleChange}
-        ref={hiddenFileInput}
-        style={{ display: "none" }} // Make the file input element invisible
-      />
-      {fileName ? <p>Uploaded file: {fileName}</p> : null}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={handleChange}
+          ref={hiddenFileInput}/>
+            <div style={{
+                    paddingTop :30
+                  }}>
+            <button className="button-upload">
+                Submit
+            </button>
+            </div>
+      </form>
+      {fileName ? <p style={{
+                    paddingTop :30
+                  }}>Uploaded file: {fileName}</p> : null}
     </>
   );
 };
