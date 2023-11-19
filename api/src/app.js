@@ -7,6 +7,8 @@ import http from "http";
 import express from 'express';
 import fs from 'fs';
 import pdf from 'pdf-parse';
+import * as path from 'path';
+import csvWriter from 'csv-writer';
 
 
 var app = express();
@@ -69,8 +71,19 @@ app.post('/pdfupload', upload.single('file'), function (req, res) {
                       // Chunk Size is divided by 3 As only 3 calls are allowed per minute
                       const chunks = createchunks(concatenatedFileText,chunkSize);
                       console.log("Chunks Length is "+chunks.length);
-                      var vectorResponses = getVerctorResponses(chunks);
-                      console.log(vectorResponses);                     
+                      //Use Chunks to get vector responses
+                      var result=getVerctorResponsesAndStoreAsCsv(chunks,fileName);
+                      if(result){
+                        return res.status(200).json({
+                          success: true,
+                          message: "Embeddings are created as CSV Under API/Excel_Vector_Store folder you can chat now",
+                        });
+                      }else{
+                        return res.status(200).json({
+                          success: false,
+                          message: "Unable To Create Embeddings for CSV",
+                        });
+                      }
                   }
                 }else{
                   return res.status(200).json({
@@ -92,10 +105,6 @@ app.post('/pdfupload', upload.single('file'), function (req, res) {
             });
           })
     }
-    return res.status(200).json({
-      success: true,
-      message: "File Uploaded Succesfully",
-    });
    }
 })
 
@@ -109,21 +118,45 @@ function createchunks(inputText,chunksize){
   return chunks; 
 }
 
-   async function getVerctorResponses(chunks){
+   async function getVerctorResponsesAndStoreAsCsv(chunks,fileName){
     var vectorResponses = [];
     for(let index=0;index<chunks.length;index++){
       const chunk = chunks[index];
       console.log("============Service Called=============");
       console.log("Chunk Text "+chunk);
         try{
-          var vectorResponse = await callEmbeddingService(chunk,index);
+          //var vectorResponse = await callEmbeddingService(chunk,index);
+          var vectorResponse = {
+            index:0,
+            embeddings:"Some Embeddings",
+            tokens:80,
+            inputText:"Some Text"
+          };
           vectorResponses.push(vectorResponse);
       }catch(err){
         console.log(err);
       }
       console.log("============Service Called=============");
     }
-    return vectorResponses;
+    console.log("============Vector Tokens=============");
+    console.log(vectorResponses);
+    console.log("============Vector Tokens=============");
+    console.log("============Storing Vector Tokens as Excel =============");
+    fileName=fileName.replace(".pdf","");
+    console.log("file name is >>",fileName);
+    const writer = csvWriter.createObjectCsvWriter({
+      path: path.resolve('./excel_Vector_Store', fileName+'.csv'),
+      header: [
+        { id: 'index', title: 'Index' },
+        { id: 'embeddings', title: 'Embeddings' },
+        { id: 'tokens', title: 'Tokens' },
+        { id: 'inputText', title: 'InputText' },
+      ],
+    });
+    writer.writeRecords(vectorResponses).then(() => {
+      console.log('Excel Created');
+    });
+    return true;
   }
 
   async function callEmbeddingService(chunk,index){
@@ -144,7 +177,7 @@ function createchunks(inputText,chunksize){
         });
         setTimeout(() => {
             resolve(result);
-        },1000);
+        },500);
     });
   }
 
