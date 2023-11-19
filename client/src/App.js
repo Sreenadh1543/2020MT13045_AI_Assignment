@@ -31,10 +31,10 @@ class App extends Component {
 
     render() {
         return (
+            <>
+            <h3 className="heading">{this.state.apiResponse}</h3>
             <div className="App">
-                
-                <NavBar></NavBar>
-                <h3 className="App-intro">{this.state.apiResponse}</h3>
+                <NavBar></NavBar>          
                 <Routes>
                     <Route exact path="/" Component={Welcome}/>
                     <Route exact path="/simplechatbot" Component={SimpleChatBot}/>
@@ -42,10 +42,8 @@ class App extends Component {
                     <Route exact path="/single-embedding" Component={SingleEmbedding}/>
                     <Route exact path="/multi-embedding" Component={MultiEmbedding}/>
                 </Routes>
-                <br/>
-                <br/>
-              
             </div>
+            </>
         );
     }
 }

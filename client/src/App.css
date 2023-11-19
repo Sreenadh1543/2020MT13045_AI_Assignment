@@ -1,5 +1,16 @@
 .App {
   text-align: center;
+  padding: 0;
+}
+
+.heading {
+  text-align: center;
+  padding: 0;
+}
+
+.navigation {
+  text-align: right;
+  padding: 0;
 }
 
 .chatbot {
@@ -20,20 +31,19 @@
 
 header {
   display: block;
-  height: 50px;
+  height: 10px;
   line-height: 50px;
   padding: 20px;
 }
 
 .mainmaneheader {
-  float: left;
+  text-align: left;
   position: relative;
 }
 
 ul {
   padding: 0;
   margin: 0;
-  width: 100%;
   text-align: right;
 }
 

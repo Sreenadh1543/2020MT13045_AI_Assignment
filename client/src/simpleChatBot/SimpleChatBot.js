@@ -9,7 +9,7 @@ import MessageParser from './MessageParser.js';
 function SimpleChatBot(){
     return (
        <div>
-         <h1>Simple Chat bot with Random Responses!</h1>
+         <h2>Simple Chat bot with Random Responses!</h2>
          <div className="chatbot">
              <Chatbot
               config={config}

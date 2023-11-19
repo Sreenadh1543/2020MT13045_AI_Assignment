@@ -10,6 +10,7 @@ import FileReader from "react-file-reader";
 
 
 export const SingleEmbedding = ({}) => {
+
   const [fileName, setFileName] = useState("");
   const [pdf, setPdf] = useState({ preview: '', data: '' })
   const [status, setStatus] = useState('')
@@ -28,29 +29,36 @@ export const SingleEmbedding = ({}) => {
     let formData = new FormData()
     formData.append('file', pdf.data)
     formData.append('name', pdf.name)
-    const response = await fetch('http://localhost:9000/pdfupload', {
+
+    fetch('http://localhost:9000/pdfupload', {
       method: 'POST',
       body: formData,
-    })
-    if (response) setStatus(response.statusText)
-  }
-  const handleChange = (e) => {
-    var file = e.target.files[0];
-    console.log(file);
-    handleFile(file)
-    const pdf = {
-      data: file,
-      name: file.name
-    }
-    setPdf(pdf)
-  }
+    }).then((response) => response.json())
+    .then((responseData)=> {
+      console.log(responseData);
+      setStatus(responseData.message);
+    }).catch((error) =>{
+      setStatus("Error In Creating CSV with tokens");  
+    });
+
+  };
+
+    const handleChange = (e) => {
+      var file = e.target.files[0];
+      console.log(file);
+      handleFile(file)
+      const pdf = {
+        data: file,
+        name: file.name
+      }
+      setPdf(pdf)
+    };
+
   return (
     <>
-    <div>
-          <h1>Simple Chat bot Integrated with OPEN Ai Api's </h1>
-          <h1>Domain Specific With Single Document !</h1>
-          <h1>Text-Embedding-ada-002</h1>
-        </div>
+      <h2>Simple Chat bot Integrated with OPEN Ai Api's </h2>
+      <h2>Domain Specific With Single Document !</h2>
+      <h2>Text-Embedding-ada-002</h2>
         <div className="bot-to-left">
         <Chatbot
             config={config}
@@ -61,12 +69,12 @@ export const SingleEmbedding = ({}) => {
           display: 'flex',
           float: 'center',
           position: 'relative',
-          paddingTop :100,
+          paddingTop :30,
           margin: 'auto',
           width: 400,
           flexWrap: 'wrap',
         }}>
-      <div style={{ width: '100%', float: 'left' }}>
+      <div style={{  paddingTop :50 ,width: '100%', float: 'left' }}>
         <h3>Upload Single Pdf for embedding</h3> <br />
       </div>
       </div>
@@ -84,11 +92,17 @@ export const SingleEmbedding = ({}) => {
             </button>
             </div>
       </form>
-      {fileName ? <p style={{
-                    paddingTop :30
-                  }}>Uploaded file: {fileName}</p> : null}
+      {fileName ? <p style={{ paddingTop :30}}><h3>Uploaded file:</h3>{fileName}</p> : null}
+      <br/>
+      Some Sample Single Page Pdf's are provided in the zip submitted for assignment
+      <br/>
+      {status ?<p style={{ paddingTop :20}}><h3>Service Response :</h3>{status}</p> : null}
+      <br/>
+      <p style={{ paddingTop :20}}><h3>Note :</h3>Please limit to upload only a <b>Single page Pdf</b>, there is a rate limit of 
+      only 3 requests for embeddings for a free reqeust and i did a chunking of data only into 3 parts to meet it</p>
     </>
   );
+
 };
 
 export default SingleEmbedding;
