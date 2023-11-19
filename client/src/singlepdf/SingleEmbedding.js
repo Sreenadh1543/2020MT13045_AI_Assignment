@@ -3,15 +3,35 @@ import Chatbot from 'react-chatbot-kit';
 import config from '../Config.js';
 import ActionProvider from './ActionProvider.js';
 import MessageParser from './MessageParser.js';
-import Button from '@material-ui/core/Button';
-import PhotoCamera from '@material-ui/icons/PhotoCamera';
-import IconButton from '@material-ui/core/IconButton';
+import { useRef } from "react";
+import { useState } from "react";
 
 
-function SingleEmbedding(){
-    return (
-      <div>
-        <div>
+export const SingleEmbedding = ({}) => {
+  const [fileName, setFileName] = useState("");
+  
+  const handleFile = (file) => {
+    setFileName(file.name);
+  };
+
+  // Create a reference to the hidden file input element
+  const hiddenFileInput = useRef(null);
+
+  // Programatically click the hidden file input element
+  // when the Button component is clicked
+  const handleClick = (event) => {
+    hiddenFileInput.current.click();
+  };
+  // Call a function (passed as a prop from the parent component)
+  // to handle the user-selected file
+  const handleChange = (event) => {
+    const fileUploaded = event.target.files[0];
+    console.log(fileName);
+    handleFile(fileUploaded);
+  };
+  return (
+    <>
+    <div>
           <h1>Simple Chat bot Integrated with OPEN Ai Api's </h1>
           <h1>Domain Specific With Single Document !</h1>
           <h1>Text-Embedding-ada-002</h1>
@@ -34,16 +54,19 @@ function SingleEmbedding(){
       <div style={{ width: '100%', float: 'left' }}>
         <h3>Upload Single Pdf for embedding</h3> <br />
       </div>
-      <input type="file" accept="application/pdf" style={{ display: 'none' }} id="contained-button-file" />
-      <label style={{paddingLeft:150}} htmlFor="contained-button-file">
-        <Button variant="contained" color="primary" component="span">
-          Upload
-        </Button>
-      </label>
-         </div>
-       </div>
-    );
-
-}
+      </div>
+      <button className="button-upload" onClick={handleClick}>
+        Upload a file
+      </button>
+      <input
+        type="file"
+        onChange={handleChange}
+        ref={hiddenFileInput}
+        style={{ display: "none" }} // Make the file input element invisible
+      />
+      {fileName ? <p>Uploaded file: {fileName}</p> : null}
+    </>
+  );
+};
 
 export default SingleEmbedding;

@@ -1,14 +1,53 @@
-#!/usr/bin/env node
+import cookieParser from "cookie-parser";
+import logger from "morgan";
+import cors from "cors";
+import { Configuration, OpenAIApi } from "openai";
+import { PdfReader } from "pdfreader";
+import http from "http";
+import express from 'express';
 
-/**
- * Module dependencies.
- */
+var app = express();
+app.use(cors());
+app.use(logger("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-var app = require('../app');
-var debug = require('debug')('api:server');
-var http = require('http');
+const configuration = new Configuration({
+    apiKey: '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',
+  });
 
-/**
+const openai = new OpenAIApi(configuration);
+
+app.get("/testApi", async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Backend is up and running on 9000 port",
+  });
+});
+
+
+app.post("/ask", async (req, res) => {
+    const prompt = req.body.prompt;
+    try {
+      if (prompt == null) {
+        throw new Error("Uh oh, no prompt was provided");
+      }
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt,
+      });
+      const completion = response.data.choices[0].text;
+      return res.status(200).json({
+        success: true,
+        message: completion,
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  });
+
+  /**
  * Get port from environment and store in Express.
  */
 
@@ -86,5 +125,4 @@ function onListening() {
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-  debug('Listening on ' + bind);
 }

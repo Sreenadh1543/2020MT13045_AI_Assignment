@@ -82,6 +82,13 @@ li {
   }
 }
 
+.button-upload {
+  cursor: pointer;
+  font: inherit;
+  min-height: 48px;
+  min-width: 48px;
+}
+
 .bot-to-left{
   width: 400px;
   height: 500px;
