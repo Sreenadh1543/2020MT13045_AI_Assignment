@@ -35,79 +35,123 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
+/* API 1 >> Test Api for identifying if backend works */
+app.get("/testApi", async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Backend is up and running on 9000 port",
+  });
+});
+
+/* API 2 >> Ask for Simple Chat bot integrated with Chat completions API */
+app.post("/ask", async (req, res) => {
+    const prompt = req.body.prompt;
+    try {
+      if (prompt == null) {
+        throw new Error("Uh oh, no prompt was provided");
+      }
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt,
+      });
+      const completion = response.data.choices[0].text;
+      return res.status(200).json({
+        success: true,
+        message: completion,
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+});
+
+/* API 3 >> API to upload PDF document to backend and create Embeddings (or) Vector tokens */
+/* API also stores those embeddings as CSV file */
+/*
+  Pdf Uploaded will be stored under >> api/pdf >> directory
+
+  CSV file will be used to store generated vector tokes (or) embeddings
+
+  >> Under >> api/excel_Vector_store
+
+*/
 app.post('/pdfupload', upload.single('file'), function (req, res) {
    console.log("-----------------------------------------------");
    var file = req.file;
    console.log(file);
    console.log("-----------------------------------------------");
-    if(file!=undefined){
-        var fileName = file.filename;
-        console.log("file Name is "+fileName);
-        if(fs.existsSync("./pdf/"+fileName)){
-          console.log("======file Exists======");
-          let dataBuffer = fs.readFileSync("./pdf/"+fileName);
-          pdf(dataBuffer).then(function(data) {
-             if(data!=undefined){
-                var pages = data.numpages;
-                if(pages!=1){
-                  return res.status(200).json({
-                    success: true,
-                    message: "Only One Page is allowed for this implementation",
-                  });
-                }
-                var pdf = data.text;
-                if(pdf!=undefined && pdf.length>30){
-                  //MergeLInes to single paragraph
-                  const lines = pdf.split("\n");
-                  const concatenatedFileText = lines.join("").trim().replace(/\s+/g," ");
-                  console.log("======Concatenated File Text======");
-                  console.log(concatenatedFileText);
-                  console.log("======Concatenated File Text======");
-                  if(undefined!=concatenatedFileText && concatenatedFileText.length>0){
-                      const textLength = concatenatedFileText.length;  
-                      // Create chunks of data
-                      const chunkSize = textLength/3; 
-                      console.log("Chunk Size "+chunkSize);
-                      // Chunk Size is divided by 3 As only 3 calls are allowed per minute
-                      const chunks = createchunks(concatenatedFileText,chunkSize);
-                      console.log("Chunks Length is "+chunks.length);
-                      //Use Chunks to get vector responses
-                      var result=getVerctorResponsesAndStoreAsCsv(chunks,fileName);
-                      //console.log(result);
-                      if(result){
-                        return res.status(200).json({
-                          success: true,
-                          message: "Embeddings are created as CSV Under API/Excel_Vector_Store folder you can chat now",
-                        });
-                      }else{
-                        return res.status(200).json({
-                          success: false,
-                          message: "Unable To Create Embeddings for CSV",
-                        });
-                      }
-                  }
-                }else{
-                  return res.status(200).json({
-                    success: true,
-                    message: "PDF text is less than 30 Characters or no text is available",
-                  });
-                }
-             }else{
+  return createEmbeddingsForUploadedPdfAndPersist(file,res);
+})
+
+
+function createEmbeddingsForUploadedPdfAndPersist(file,res){
+  if(file!=undefined){
+    var fileName = file.filename;
+    console.log("file Name is "+fileName);
+    if(fs.existsSync("./pdf/"+fileName)){
+      console.log("======file Exists======");
+      let dataBuffer = fs.readFileSync("./pdf/"+fileName);
+      pdf(dataBuffer).then(function(data) {
+         if(data!=undefined){
+            var pages = data.numpages;
+            if(pages!=1){
               return res.status(200).json({
                 success: true,
-                message: "Unable to retrieve data from PDF",
+                message: "Only One Page is allowed for this implementation",
               });
-             }
-          })
-          .catch(function(error){
-            return res.status(200).json({
-              success: true,
-              message: "Unable to retrieve data from PDF",
-            });
-          })
-    }
-   }
-})
+            }
+            var pdf = data.text;
+            if(pdf!=undefined && pdf.length>30){
+              //MergeLInes to single paragraph
+              const lines = pdf.split("\n");
+              const concatenatedFileText = lines.join("").trim().replace(/\s+/g," ");
+              console.log("======Concatenated File Text======");
+              console.log(concatenatedFileText);
+              console.log("======Concatenated File Text======");
+              if(undefined!=concatenatedFileText && concatenatedFileText.length>0){
+                  const textLength = concatenatedFileText.length;  
+                  // Create chunks of data
+                  const chunkSize = textLength/3; 
+                  console.log("Chunk Size "+chunkSize);
+                  // Chunk Size is divided by 3 As only 3 calls are allowed per minute
+                  const chunks = createchunks(concatenatedFileText,chunkSize);
+                  console.log("Chunks Length is "+chunks.length);
+                  //Use Chunks to get vector responses
+                  var result=getVerctorResponsesAndStoreAsCsv(chunks,fileName);
+                  console.log(result);
+                  if(result){
+                    return res.status(200).json({
+                      success: true,
+                      message: "Embeddings are created as CSV Under API/Excel_Vector_Store folder you can chat now",
+                    });
+                  }else{
+                    return res.status(200).json({
+                      success: false,
+                      message: "Unable To Create Embeddings for CSV",
+                    });
+                  }
+              }
+            }else{
+              return res.status(200).json({
+                success: true,
+                message: "PDF text is less than 30 Characters or no text is available",
+              });
+            }
+         }else{
+          return res.status(200).json({
+            success: true,
+            message: "Unable to retrieve data from PDF",
+          });
+         }
+      })
+      .catch(function(error){
+        return res.status(200).json({
+          success: true,
+          message: "Unable to retrieve data from PDF",
+        });
+      })
+}
+}
+}
 
 function createchunks(inputText,chunksize){
   const chunks = [];
@@ -126,13 +170,7 @@ function createchunks(inputText,chunksize){
       console.log("============Service Called=============");
       console.log("Chunk Text "+chunk);
         try{
-          var vectorResponse = await callEmbeddingService(chunk,index);
-          /*var vectorResponse = {
-            index:0,
-            embeddings:"Some Embeddings",
-            tokens:80,
-            inputText:"Some Text"
-          };*/
+          var vectorResponse;//= await callEmbeddingService(chunk,index);
           vectorResponses.push(vectorResponse);
       }catch(err){
         console.log(err);
@@ -141,7 +179,7 @@ function createchunks(inputText,chunksize){
     }
     console.log("============Vector Tokens=============");
 
-    /*
+  
     Promise.all(vectorResponses).then(function (values) {
       console.log(values);
       console.log("============Vector Tokens=============");
@@ -160,7 +198,8 @@ function createchunks(inputText,chunksize){
       writer.writeRecords(vectorResponses).then(() => {
         console.log('Excel Created');
       });
-    });*/
+    });
+    
 
     return vectorResponses;
   }
@@ -188,32 +227,7 @@ function createchunks(inputText,chunksize){
     });
   }
 
-app.get("/testApi", async (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message: "Backend is up and running on 9000 port",
-  });
-});
 
-app.post("/ask", async (req, res) => {
-    const prompt = req.body.prompt;
-    try {
-      if (prompt == null) {
-        throw new Error("Uh oh, no prompt was provided");
-      }
-      const response = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt,
-      });
-      const completion = response.data.choices[0].text;
-      return res.status(200).json({
-        success: true,
-        message: completion,
-      });
-    } catch (error) {
-      console.log(error.message);
-    }
-  });
 
   /**
  * Get port from environment and store in Express.
