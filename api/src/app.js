@@ -1,7 +1,7 @@
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import cors from "cors";
-import { Configuration, OpenAIApi } from "openai";
+import {Configuration,OpenAIApi } from "openai";
 import multer from "multer";
 import http from "http";
 import express from 'express';
@@ -10,6 +10,7 @@ import pdf from 'pdf-parse';
 import * as path from 'path';
 import csvWriter from 'csv-writer';
 import csvReader from 'csv-parser';
+import cosineSimilarity from "compute-cosine-similarity";
 
 
 var app = express();
@@ -19,9 +20,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+
 const configuration = new Configuration({
     apiKey: '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',
-  });
+});
 
 const openai = new OpenAIApi(configuration);
 
@@ -99,22 +101,142 @@ app.post('/getchatResponse', function (req, res) {
   console.log(fileName);
   console.log("-----------------------------------------------");
   console.log(payload.prompt);
+  const question= payload.prompt;
   console.log("-----------------------------------------------");
-  var results = [];
+  var vectorEmbeddings = [];
   fs.createReadStream('./excel_Vector_Store/'+fileName)
   .pipe(csvReader())
-  .on('data', (data) => results.push(data))
+  .on('data', (data) => vectorEmbeddings.push(data))
   .on('end', () => {
-    console.log(results);
-  });
-  return res.status(200).json({
-    success: true,
-    message: "Response from chat completion"
+    console.log(vectorEmbeddings);
+    getResponseForQuestionFromPdf(vectorEmbeddings,question,res);
   });
 })
 
+async function getResponseForQuestionFromPdf(vectorEmbeddingsFromCsv,question,res){
+  
+  const response = await openai.createEmbedding({
+    model: 'text-embedding-ada-002',
+    input: question,
+  });
+  
+  const vectorEmbeddingForQuestion = response.data.data[0].embedding;
 
+  console.log("==================");
+  console.log(vectorEmbeddingForQuestion)
+  console.log("==================");
 
+   
+  var onlyEmbeddings = vectorEmbeddingsFromCsv.map(element => {
+    var embeddingAsString = element.Embeddings;
+    var embeddingAsArray = embeddingAsString.split(',').map(item => item.trim());
+    return embeddingAsArray;
+   });
+
+  const distances = distancesFromEmbeddings({
+    vectorEmbeddingForQuestion,
+    embeddings: onlyEmbeddings, // These are the content embeddings generated before
+  });
+
+  console.log("--------------distances From stored----------")
+  console.log(distances);
+  console.log("--------------distances From stored----------")
+  /*
+    [
+      { index: 0, distance: 0.15423657128449708 },
+      { index: 1, distance: 0.2055238794068508 },
+      { index: 2, distance: 0.15050747704486 }
+   ]
+  */
+  // With distances we need to pick index with smallest distance
+
+   var indexWithLowestDistance;
+   var distanceAfterCosineSimilarity;
+   distances.forEach(element => {
+      if(indexWithLowestDistance==undefined&&distanceAfterCosineSimilarity==undefined){
+        indexWithLowestDistance=element.index;
+        distanceAfterCosineSimilarity=element.distance;
+      }else{
+          if(element.distance<distanceAfterCosineSimilarity){
+            indexWithLowestDistance=element.index;
+            distanceAfterCosineSimilarity=element.distance;
+          }
+      }
+   });
+
+   console.log("--------------Index With Lowest distance----------")
+   console.log("Index With Smallest Distance "+indexWithLowestDistance);
+   console.log("Distance with cosine similarity "+distanceAfterCosineSimilarity);
+   console.log("--------------Index With Lowest distance----------")
+
+   var chunkOfTextWithMatchedIndex = vectorEmbeddingsFromCsv[indexWithLowestDistance].InputText;
+
+   /* Now pass the chunk of text with lowest distance to completions API to get response */
+
+   //Chat Prompts are picked from an online reference
+    const chatCompletionInPdfContext = await openai.createChatCompletion({
+      messages: [
+        { role: "system", content: "You are a helpful assistant" },
+        {
+          role: "assistant",
+          content: "We are going to call the following set of information <UploadedPDF>:\n\n"+chunkOfTextWithMatchedIndex,
+        },
+        {
+          role: "assistant",
+          content: "If question is NOT related to <UploadedPDF> or NearForm respond with: 'I'm sorry but I can only provide answers to questions related to NearForm.'",
+        },
+        {
+          role: "assistant",
+          content:"If there is NO relevant information in <UploadedPDF> to answer the question, then briefly apologize with the user.",
+        },
+        {
+          role: "assistant",
+          content: "If you provide an answer, use only the information existing in <UploadedPDF>. You must not use any other source of information.",
+        },
+        {
+          role: "user",
+          content: "Question:"+question,
+        },
+      ],
+      temperature: 0,
+      top_p: 1,
+      model: "gpt-3.5-turbo",
+    });
+
+    var messageObject = chatCompletionInPdfContext.data.choices[0];
+
+    console.log("--------------Chat Completion response from API----------")
+    console.log(messageObject);
+    /*
+    {
+      index: 0,
+      message: {
+        role: 'assistant',
+        content: 'According to the information in <UploadedPDF>, Sherlock Holmes is described as a blind washing man.'
+      },
+      finish_reason: 'stop'
+    }
+    */
+    console.log("--------------Chat Completion response from API----------")
+
+    var reply = messageObject.message.content;
+
+    return res.status(200).json({
+      success: true,
+      message: reply
+    });
+
+}
+
+function distancesFromEmbeddings({ vectorEmbeddingForQuestion, embeddings }) {
+  console.log("--distance--")
+  console.log(vectorEmbeddingForQuestion);
+  console.log(embeddings);
+  return embeddings.map((embedding, index) => ({
+    index,
+    distance: 1 - cosineSimilarity(vectorEmbeddingForQuestion, embedding),
+  }));
+}
 
 
 function createEmbeddingsForUploadedPdfAndPersist(file,res){
