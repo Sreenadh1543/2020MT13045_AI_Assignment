@@ -3,6 +3,7 @@
 import React from 'react';
 
 const MessageParser = ({ children, actions }) => {
+
   const parse = (message) => {
       actions.handlePrompt(message);
   };
@@ -12,7 +13,7 @@ const MessageParser = ({ children, actions }) => {
       {React.Children.map(children, (child) => {
         return React.cloneElement(child, {
           parse: parse,
-          actions: {},
+          actions: {}
         });
       })}
     </div>

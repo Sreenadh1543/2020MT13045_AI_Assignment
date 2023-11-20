@@ -5,7 +5,6 @@ import ActionProvider from './ActionProvider.js';
 import MessageParser from './MessageParser.js';
 import { useRef } from "react";
 import { useState } from "react";
-import FileReader from "react-file-reader";
 
 
 
@@ -46,7 +45,7 @@ export const SingleEmbedding = ({}) => {
     const handleChange = (e) => {
       var file = e.target.files[0];
       console.log(file);
-      handleFile(file)
+      handleFile(file);
       const pdf = {
         data: file,
         name: file.name
@@ -92,7 +91,8 @@ export const SingleEmbedding = ({}) => {
             </button>
             </div>
       </form>
-      {fileName ? <p style={{ paddingTop :30}}><h3>Uploaded file:</h3>{fileName}</p> : null}
+      <h3>Uploaded file:</h3>
+      {fileName ? <p id="uploaded-file-name" style={{ paddingTop :30}}>{fileName}</p> : null}
       <br/>
       Some Sample Single Page Pdf's are provided in the zip submitted for assignment
       <br/>

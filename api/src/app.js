@@ -9,6 +9,7 @@ import fs from 'fs';
 import pdf from 'pdf-parse';
 import * as path from 'path';
 import csvWriter from 'csv-writer';
+import csvReader from 'csv-parser';
 
 
 var app = express();
@@ -54,6 +55,9 @@ app.post("/ask", async (req, res) => {
         model: "text-davinci-003",
         prompt,
       });
+      /*------------------------*/
+       console.log(response);
+      /*------------------------*/
       const completion = response.data.choices[0].text;
       return res.status(200).json({
         success: true,
@@ -81,6 +85,36 @@ app.post('/pdfupload', upload.single('file'), function (req, res) {
    console.log("-----------------------------------------------");
   return createEmbeddingsForUploadedPdfAndPersist(file,res);
 })
+
+/*
+ Get promopt api takes the file name and user question as input 
+ and retrieves tokens from the created csv and 
+ perform cosine similarity to find relavant text and 
+ create a contextualised response
+*/
+app.post('/getchatResponse', function (req, res) {
+  var payload = req.body;
+  console.log("-----------------------------------------------");
+  const fileName =payload.fileName;
+  console.log(fileName);
+  console.log("-----------------------------------------------");
+  console.log(payload.prompt);
+  console.log("-----------------------------------------------");
+  var results = [];
+  fs.createReadStream('./excel_Vector_Store/'+fileName)
+  .pipe(csvReader())
+  .on('data', (data) => results.push(data))
+  .on('end', () => {
+    console.log(results);
+  });
+  return res.status(200).json({
+    success: true,
+    message: "Response from chat completion"
+  });
+})
+
+
+
 
 
 function createEmbeddingsForUploadedPdfAndPersist(file,res){
@@ -195,12 +229,12 @@ function createchunks(inputText,chunksize){
           { id: 'inputText', title: 'InputText' },
         ],
       });
+      /*
       writer.writeRecords(vectorResponses).then(() => {
         console.log('Excel Created');
       });
+      */
     });
-    
-
     return vectorResponses;
   }
 
