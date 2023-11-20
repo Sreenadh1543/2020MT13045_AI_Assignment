@@ -326,7 +326,7 @@ function createchunks(inputText,chunksize){
       console.log("============Service Called=============");
       console.log("Chunk Text "+chunk);
         try{
-          var vectorResponse;//= await callEmbeddingService(chunk,index);
+          var vectorResponse =await callEmbeddingService(chunk,index);
           vectorResponses.push(vectorResponse);
       }catch(err){
         console.log(err);
@@ -351,11 +351,9 @@ function createchunks(inputText,chunksize){
           { id: 'inputText', title: 'InputText' },
         ],
       });
-      /*
       writer.writeRecords(vectorResponses).then(() => {
         console.log('Excel Created');
       });
-      */
     });
     return vectorResponses;
   }
