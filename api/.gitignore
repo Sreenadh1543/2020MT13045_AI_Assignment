@@ -1,6 +1,6 @@
 #Ignore Contents of PDF folder
-/pdf/*
-/excel_Vector_Store/*
+/pdf/*.pdf
+/excel_Vector_Store/*.csv
 
 # dependencies
 /node_modules
