@@ -5,6 +5,7 @@ import ActionProvider from './ActionProvider.js';
 import MessageParser from './MessageParser.js';
 import { useRef } from "react";
 import { useState } from "react";
+import Button from "react";
 
 
 
@@ -58,7 +59,11 @@ export const SingleEmbedding = ({}) => {
       <h2>Simple Chat bot Integrated with OPEN Ai Api's </h2>
       <h2>Domain Specific With Single Document !</h2>
       <h2>Text-Embedding-ada-002</h2>
-        <div className="bot-to-left">
+      <br/>
+      <br/>
+      <h3 onClick={()=>window.open('https://drive.google.com/drive/folders/1kwQPPTDBO7_0aU6-F_Q5RUrUuzp8bNR6?usp=drive_link',
+      '_blank', 'rel=noopener noreferrer')}>Sample pdf documents created for testing .... click here</h3>
+      <div className="bot-to-left">
         <Chatbot
             config={config}
             messageParser={MessageParser}

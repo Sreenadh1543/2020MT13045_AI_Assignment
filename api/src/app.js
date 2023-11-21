@@ -85,7 +85,7 @@ app.post('/pdfupload', upload.single('file'), function (req, res) {
    var file = req.file;
    console.log(file);
    console.log("-----------------------------------------------");
-  return createEmbeddingsForUploadedPdfAndPersist(file,res);
+   return createEmbeddingsForUploadedPdfAndPersist(file,res);
 })
 
 /*
@@ -183,7 +183,7 @@ async function getResponseForQuestionFromPdf(vectorEmbeddingsFromCsv,question,re
         },
         {
           role: "assistant",
-          content: "If question is NOT related to <UploadedPDF> or NearForm respond with: 'I'm sorry but I can only provide answers to questions related to NearForm.'",
+          content: "If question is NOT related to <UploadedPDF> or NearForm respond with: 'I'm sorry but I can only provide answers to questions related to <UploadedPDF>.'",
         },
         {
           role: "assistant",
