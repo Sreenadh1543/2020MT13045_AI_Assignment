@@ -93,6 +93,7 @@ export const MultiEmbedding = ({}) => {
        <br/>
        <br/>
       <h3>Upload file for embedding</h3>
+      <h4>Wait a minute to upload second file , as rate limt is only 3 requests for minute per embeddings</h4>
        <br />
       <form onSubmit={handleSubmit}>
         <input

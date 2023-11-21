@@ -333,10 +333,9 @@ function createchunks(inputText,chunksize){
       }
       console.log("============Service Called=============");
     }
-    console.log("============Vector Tokens=============");
 
-  
     Promise.all(vectorResponses).then(function (values) {
+      console.log("============Vector Tokens=============");
       console.log(values);
       console.log("============Vector Tokens=============");
       console.log("============Storing Vector Tokens as Excel =============");
@@ -351,7 +350,7 @@ function createchunks(inputText,chunksize){
           { id: 'inputText', title: 'InputText' },
         ],
       });
-      writer.writeRecords(vectorResponses).then(() => {
+      writer.writeRecords(values).then(() => {
         console.log('Excel Created');
       });
     });
