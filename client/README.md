@@ -7,6 +7,8 @@ Node version with which this project is implemented is V20.9.0
 
 ### Video demonstration of project
 
+View in full screen for better clarity
+
 Video Demonstration can be found here : [https://drive.google.com/file/d/1jmH7QGrTVnWZmNPvmD9C-fh99b6CpRzQ/view?usp=drive_link](https://drive.google.com/file/d/1jmH7QGrTVnWZmNPvmD9C-fh99b6CpRzQ/view?usp=drive_link)
 
 ### `npm install`
