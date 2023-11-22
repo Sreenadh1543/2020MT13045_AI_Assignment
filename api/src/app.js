@@ -22,7 +22,9 @@ app.use(cookieParser());
 
 
 const configuration = new Configuration({
-    apiKey: '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',
+    apiKey: '<<API_KEY>>',
+    //Replace with a valid key before using this project
+    //Key is removed after video creation to avoid loss or invalidation of key
 });
 
 const openai = new OpenAIApi(configuration);
