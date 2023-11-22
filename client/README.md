@@ -36,7 +36,7 @@ This to be done before doint below command on API Module
 
 ### `npm start` on API
 
- [http://localhost:9000](http://localhost:9000) 
+[http://localhost:9000](http://localhost:9000)
 
 Screen running on [http://localhost:3000](http://localhost:3000)
 
