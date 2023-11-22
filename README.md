@@ -1,6 +1,8 @@
 # Getting Started with 2020MT13045 AI ASSIGNMENT
 
+### Node version
 
+Node version with which this project is implemented is V20.9.0
 
 
 ### Video demonstration of project
@@ -9,9 +11,10 @@ Video Demonstration can be found here : [https://drive.google.com/file/d/1jmH7QG
 
 ### `npm install`
 
-will install requried node modules both on api and client
+will install requried node modules both on api and client folders
 
-
+>> API is the backend module which has api's to connect with open AI
+>> client is the front end module which is built on react.
 
 ### `npm start` on client
 
@@ -36,7 +39,7 @@ This to be done before doint below command on API Module
 
 ### `npm start` on API
 
- [http://localhost:9000](http://localhost:9000) 
+[http://localhost:9000](http://localhost:9000)
 
 Screen running on [http://localhost:3000](http://localhost:3000)
 
